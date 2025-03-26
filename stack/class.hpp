@@ -19,6 +19,12 @@ public:
 };
 
 template<class T>
+class StackVector;
+
+template<class T>
+std::ostream& operator<<(std::ostream& out, const StackVector<T>& stack);
+
+template<class T>
 class StackVector: public Stack<T>
 {
 public:
@@ -34,6 +40,11 @@ public:
     void push(const T& element);
     T pop() override;
     bool isEmpty();
+
+    friend std::ostream& operator<< <T>(std::ostream& out, const StackVector<T>& stack);
+
+    // std::size_t getSize() { return size_; };
+    // T* getArray() { return array_; };
 
 private:
     T* array_;
@@ -130,6 +141,21 @@ template<class T>
 bool StackVector<T>::isEmpty()
 {
     return top_ == 0;
+}
+
+template<class T>
+std::ostream& operator<<(std::ostream& out, const StackVector<T>& stack)
+{
+    out << "Elemnts of stack:\n";
+
+    for (std::size_t i = 0; i < stack.top_; ++i)
+    {
+        out << stack.array_[i] << "\n";
+    }
+
+    out << "end of stack\n";
+
+    return out;
 }
 
 #endif // !__CLASSES_HPP
