@@ -19,12 +19,6 @@ public:
 };
 
 template<class T>
-class StackVector;
-
-template<class T>
-std::ostream& operator<<(std::ostream& out, const StackVector<T>& stack);
-
-template<class T>
 class StackVector: public Stack<T>
 {
 public:
@@ -41,10 +35,8 @@ public:
     T pop() override;
     bool isEmpty();
 
-    friend std::ostream& operator<< <T>(std::ostream& out, const StackVector<T>& stack);
-
-    // std::size_t getSize() { return size_; };
-    // T* getArray() { return array_; };
+    template<class U>
+    friend std::ostream& operator<<(std::ostream& out, const StackVector<U>& stack);
 
 private:
     T* array_;
@@ -74,8 +66,8 @@ private:
 
 template<class T>
 StackVector<T>:: StackVector(std::size_t size) :
-    size_(size),
-    top_(0)
+    top_(0),
+    size_(size)
 {
     try
     {
@@ -104,21 +96,12 @@ void StackVector<T>::push(const T& element)
 
         T* new_array = new T[new_size];
 
-        // memset(new_array, 0, sizeof(T) * new_size);
-        // std::copy(array_, array_ + new_size, new_array);
-
-        try
+        for (std::size_t i = 1; i <= size_; ++i)
         {
-            std::copy(array_, array_ + new_size, new_array);
-        }
-        catch(...)
-        {
-            delete[] new_array;
-            throw;
+            new_array[i] = array_[i];
         }
 
         delete[] array_;
-
         array_ = new_array;
         size_ = new_size;
     }
@@ -143,12 +126,12 @@ bool StackVector<T>::isEmpty()
     return top_ == 0;
 }
 
-template<class T>
-std::ostream& operator<<(std::ostream& out, const StackVector<T>& stack)
+template<class U>
+std::ostream& operator<<(std::ostream& out, const StackVector<U>& stack)
 {
     out << "Elemnts of stack:\n";
 
-    for (std::size_t i = 0; i < stack.top_; ++i)
+    for (std::size_t i = 1; i <= stack.top_; ++i)
     {
         out << stack.array_[i] << "\n";
     }

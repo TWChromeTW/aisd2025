@@ -3,7 +3,7 @@
 
 int main()
 {
-    StackVector<int> test;
+    StackVector<int> test(2);
     int tmp;
 
     std::cout << "isEmpty: " << test.isEmpty() << std::endl;
