@@ -23,11 +23,11 @@ class StackVector: public Stack<T>
 {
 public:
     StackVector(std::size_t size = 100);
-    // StackVector(const StackVector<T>& src); ##не понял зачем...
-    // StackVector(StackVector<T>&& src); ##не понял зачем...
+    StackVector(const StackVector<T>& src); //конструктор копирования
+    StackVector(StackVector<T>&& src); //конструктор перемещения
 
-    // StackVector& operator=(const StackVector<T>& src);
-    // StackVector& operator=(StackVector<T>&&src);
+    StackVector& operator=(const StackVector<T>& src); //оператор копирования
+    //StackVector& operator=(StackVector<T>&&src); //оператор перемещения (не понял...)
 
     virtual ~StackVector();
 
@@ -37,6 +37,9 @@ public:
 
     template<class U>
     friend std::ostream& operator<<(std::ostream& out, const StackVector<U>& stack);
+
+    template<class U>
+    friend void swap(StackVector<U>& first, StackVector<U>& second);
 
 private:
     T* array_;
@@ -82,9 +85,68 @@ StackVector<T>:: StackVector(std::size_t size) :
 }
 
 template<class T>
+StackVector<T>:: StackVector(StackVector<T>&& src):
+    top_(src.top_),
+    size_(src.size_)
+{
+    try
+    {
+        array_ = new T[src.size_ + 1];
+
+        for (std::size_t i = 1; i <= src.size_; ++i)
+        {
+            array_[i] = src.array_[i];
+        }
+
+        src.~StackVector();
+    }
+    catch(...)
+    {
+        std::cout << "bad\n";
+        // throw WrongStackSize()
+    }
+}
+
+template<class T>
+StackVector<T>::StackVector(const StackVector<T>& src) :
+    top_(src.top_),
+    size_(src.size_)
+{
+    try
+    {
+        array_ = new T[src.size_ + 1];
+
+        for (std::size_t i = 1; i <= src.size_; ++i)
+        {
+            array_[i] = src.array_[i];
+        }
+    }
+    catch(...)
+    {
+        std::cout << "bad\n";
+        // throw WrongStackSize()
+    }
+}
+
+template<class T>
+StackVector<T>& StackVector<T>:: operator=(const StackVector<T>& src)
+{
+    if (this != &src)
+    {
+        StackVector<T> tmp(src);
+        swap(*this, tmp);
+    }
+
+    return *this;
+}
+
+template<class T>
 StackVector<T>:: ~StackVector()
 {
     delete[] array_;
+    array_ = nullptr;
+    size_ = 0;
+    top_ = 0;
 }
 
 template<class T>
@@ -103,7 +165,7 @@ void StackVector<T>::push(const T& element)
 
         delete[] array_;
         array_ = new_array;
-        size_ = new_size;
+        size_ = new_size -1;
     }
 
     array_[++top_] = element;
@@ -139,6 +201,14 @@ std::ostream& operator<<(std::ostream& out, const StackVector<U>& stack)
     out << "end of stack\n";
 
     return out;
+}
+
+template<class U>
+void swap(StackVector<U>& first, StackVector<U>& second)
+{
+    std::swap(first.array_, second.array_);
+    std::swap(first.size_, second.size_);
+    std::swap(first.top_, second.top_);
 }
 
 #endif // !__CLASSES_HPP
