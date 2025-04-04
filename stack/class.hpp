@@ -13,9 +13,6 @@ public:
     virtual void push(const T& element) = 0;
     virtual T pop() = 0;
     virtual bool isEmpty() = 0;
-
-// exception: ##думать думать думать
-//     StackUnderflow
 };
 
 template<class T>
@@ -23,17 +20,19 @@ class StackVector: public Stack<T>
 {
 public:
     StackVector(std::size_t size = 100);
-    StackVector(const StackVector<T>& src); //конструктор копирования
-    StackVector(StackVector<T>&& src); //конструктор перемещения
+    StackVector(const StackVector<T>& src);
+    StackVector(StackVector<T>&& src);
 
-    StackVector& operator=(const StackVector<T>& src); //оператор копирования
-    //StackVector& operator=(StackVector<T>&&src); //оператор перемещения (не понял...)
+    StackVector& operator=(const StackVector<T>& src);
+    StackVector& operator=(StackVector<T>&&src);
 
     virtual ~StackVector();
 
-    void push(const T& element);
+    void createArray(std::size_t size);
+
+    void push(const T& element) override;
     T pop() override;
-    bool isEmpty();
+    bool isEmpty() override;
 
     template<class U>
     friend std::ostream& operator<<(std::ostream& out, const StackVector<U>& stack);
@@ -45,9 +44,6 @@ private:
     T* array_;
     std::size_t top_;
     std::size_t size_;
-
-// exception: ##думать думать думать
-//     StackUnderflow
 };
 
 template<class T>
@@ -61,11 +57,29 @@ private:
     const std::string reason_;
 };
 
-// template<class T>
-// class WrongStackSize
-// {
-// //pass
-// };
+template<class T>
+class WrongStackSize: public std::exception
+{
+public:
+    WrongStackSize() : reason_("WrongStackSize") {}
+    const char* what() const noexcept override { return reason_.c_str(); }
+private:
+    const std::string reason_;
+};
+
+template<class T>
+void StackVector<T>::createArray(std::size_t size)
+{
+    try
+    {
+        array_ = new T[size + 1];
+    }
+    catch(...)
+    {
+        throw WrongStackSize<T>();
+    }
+
+}
 
 template<class T>
 StackVector<T>:: StackVector(std::size_t size) :
@@ -74,37 +88,24 @@ StackVector<T>:: StackVector(std::size_t size) :
 {
     try
     {
-        array_ = new T[size + 1];
+        createArray(size);
     }
-    catch(...)
+    catch(std::exception& e)
     {
-        std::cout << "bad\n";
-        // throw WrongStackSize()
+        std::cerr << e.what() << '\n';
     }
 
 }
 
 template<class T>
 StackVector<T>:: StackVector(StackVector<T>&& src):
+    array_(src.array_),
     top_(src.top_),
     size_(src.size_)
 {
-    try
-    {
-        array_ = new T[src.size_ + 1];
-
-        for (std::size_t i = 1; i <= src.size_; ++i)
-        {
-            array_[i] = src.array_[i];
-        }
-
-        src.~StackVector();
-    }
-    catch(...)
-    {
-        std::cout << "bad\n";
-        // throw WrongStackSize()
-    }
+    src.array_ = nullptr;
+    src.top_ = 0;
+    src.size_ = 0;
 }
 
 template<class T>
@@ -123,8 +124,7 @@ StackVector<T>::StackVector(const StackVector<T>& src) :
     }
     catch(...)
     {
-        std::cout << "bad\n";
-        // throw WrongStackSize()
+        throw WrongStackSize<T>();
     }
 }
 
@@ -141,12 +141,25 @@ StackVector<T>& StackVector<T>:: operator=(const StackVector<T>& src)
 }
 
 template<class T>
+StackVector<T>& StackVector<T>:: operator=(StackVector<T>&& src)
+{
+    if (this != &src) {
+        delete[] array_;
+        array_ = src.array_;
+        size_ = src.size_;
+        top_ = src.top_;
+
+        src.array_ = nullptr;
+        src.size_ = 0;
+        src.top_ = 0;
+    }
+    return *this;
+}
+
+template<class T>
 StackVector<T>:: ~StackVector()
 {
     delete[] array_;
-    array_ = nullptr;
-    size_ = 0;
-    top_ = 0;
 }
 
 template<class T>
@@ -156,16 +169,23 @@ void StackVector<T>::push(const T& element)
     {
         std::size_t new_size = size_*2 + 1;
 
-        T* new_array = new T[new_size];
-
-        for (std::size_t i = 1; i <= size_; ++i)
+        try
         {
-            new_array[i] = array_[i];
-        }
+            T* new_array = new T[new_size];
 
-        delete[] array_;
-        array_ = new_array;
-        size_ = new_size -1;
+            for (std::size_t i = 1; i <= size_; ++i)
+            {
+                new_array[i] = array_[i];
+            }
+
+            delete[] array_;
+            array_ = new_array;
+            size_ = new_size -1;
+        }
+        catch(...)
+        {
+            throw WrongStackSize<T>();
+        }
     }
 
     array_[++top_] = element;
@@ -174,9 +194,16 @@ void StackVector<T>::push(const T& element)
 template<class T>
 T StackVector<T>::pop()
 {
-    if (isEmpty())
+    try
     {
-        throw StackUnderflow<T>();
+        if (isEmpty())
+        {
+            throw StackUnderflow<T>();
+        }
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
     }
 
     return array_[top_--];
