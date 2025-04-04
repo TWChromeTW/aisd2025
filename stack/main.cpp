@@ -125,14 +125,35 @@ int main()
     //checkBalanceBrackets
     std::cout << "checkBalanceBrackets" << '\n';
 
-    //true
-    std:: cout << "({[]}) : " << checkBalanceBrackets("({[]})", 3) << '\n';
-    std:: cout << "([{}()][()({{()}})()]) : " << checkBalanceBrackets("([{}()][()({{()}})()])", 11) << '\n';
-    //false
-    std:: cout << "({[][]}({})] : " << checkBalanceBrackets("({[][]}({})]", 3) << '\n';
-    std:: cout << "({[()]{]({})}) : " << checkBalanceBrackets("({[()]{]({})})", 4) << '\n';
-    std:: cout << "([]((({]((({{{}}}))()){})[})))[]) : " << checkBalanceBrackets("([]((({]((({{{}}}))()){})[})))[])", 10) << '\n';
-    std:: cout << "(((()))) : " << checkBalanceBrackets("(((())))", 3) << '\n';
+    struct Node
+    {
+    public:
+        Node(const char* elem, const int deep):
+            elem_(elem),
+            deep_(deep)
+        {}
+
+        const char* getElem() { return elem_; }
+        int getDeep() { return deep_; }
+    private:
+        const char* elem_;
+        const int deep_;
+    };
+
+    Node arr[6] =
+    {
+        Node("({[]})", 3), //true
+        Node("([{}()][()({{()}})()])", 11), //true
+        Node("({[][]}({})]", 3), //false
+        Node("({[()]{]({})})", 4), //false
+        Node("([]((({]((({{{}}}))()){})[})))[])", 10), //false
+        Node("(((())))", 3) //false
+    };
+
+    for (std::size_t i = 0; i < 6; ++i)
+    {
+        std::cout << arr[i].getElem() << " : " << checkBalanceBrackets(arr[i].getElem(), arr[i].getDeep()) << '\n';
+    }
 #endif
 
 #if 0
