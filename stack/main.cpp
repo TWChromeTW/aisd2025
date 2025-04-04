@@ -1,7 +1,7 @@
 #include "class.hpp"
 #include <iostream>
 #include <string>
-#include <string.h>
+#include <cstring>
 
 bool checkBalanceBrackets(const char* text, const int maxDeep);
 
@@ -59,13 +59,14 @@ bool checkBalanceBrackets(const char* text, const int maxDeep)
 
 int main()
 {
+#if 1
     //tests of StackVector
     std:: cout << "Tests of StackVector" << '\n';
 
     StackVector<int> test(2);
     int tmp;
 
-    std::cout << "Push/Pop..." << std::endl;
+    std::cout << "Push/Pop..." << '\n';
 
     std::cout << "isEmpty: " << test.isEmpty() << '\n';
     test.push(5);
@@ -125,13 +126,31 @@ int main()
     std::cout << "checkBalanceBrackets" << '\n';
 
     //true
-    std:: cout << "({[]}) : " << checkBalanceBrackets("({[]})", 3) << std:: endl;
-    std:: cout << "([{}()][()({{()}})()]) : " << checkBalanceBrackets("([{}()][()({{()}})()])", 6) << std:: endl;
+    std:: cout << "({[]}) : " << checkBalanceBrackets("({[]})", 3) << '\n';
+    std:: cout << "([{}()][()({{()}})()]) : " << checkBalanceBrackets("([{}()][()({{()}})()])", 11) << '\n';
     //false
-    std:: cout << "({[][]}({})] : " << checkBalanceBrackets("({[][]}({})]", 3) << std:: endl;
-    std:: cout << "({[()]{]({})}) : " << checkBalanceBrackets("({[()]{]({})})", 4) << std:: endl;
-    std:: cout << "([]((({]((({{{}}}))()){})[})))[]) : " << checkBalanceBrackets("([]((({]((({{{}}}))()){})[})))[])", 10) << std:: endl;
-    std:: cout << "(((()))) : " << checkBalanceBrackets("(((())))", 3) << std:: endl;
+    std:: cout << "({[][]}({})] : " << checkBalanceBrackets("({[][]}({})]", 3) << '\n';
+    std:: cout << "({[()]{]({})}) : " << checkBalanceBrackets("({[()]{]({})})", 4) << '\n';
+    std:: cout << "([]((({]((({{{}}}))()){})[})))[]) : " << checkBalanceBrackets("([]((({]((({{{}}}))()){})[})))[])", 10) << '\n';
+    std:: cout << "(((()))) : " << checkBalanceBrackets("(((())))", 3) << '\n';
+#endif
+
+#if 0
+    StackVector<int> stack(3);
+
+    stack.push(1);
+    stack.push(2);
+
+    int a, b, c;
+
+    a = stack.pop();
+    b = stack.pop();
+    c = stack.pop();
+#endif
+
+#if 0
+    StackVector<int> test(1000000000000000000);
+#endif
 
     return 0;
 }
