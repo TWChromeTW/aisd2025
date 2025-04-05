@@ -1,48 +1,87 @@
 #include "class.hpp"
 #include <iostream>
+#include <string>
 
 int main()
 {
-    // QueueRing<int> queue(10);
+    std::cout << "TEST OF QUEUERING" << '\n';
 
-    // queue.enQueue(15);
-    // queue.enQueue(6);
-    // queue.enQueue(9);
-    // queue.enQueue(8);
-    // queue.enQueue(4);
+    std::cout << "\nCreate, enQueue, deQueue (int)" << '\n';
 
-    // std:: cout << queue;
+    QueueRing<int> test1(10);
 
-    // queue.enQueue(17);
-    // queue.enQueue(3);
-    // queue.enQueue(5);
+    std::cout << "enQueue and cout Qeueu" << '\n';
 
-    // std:: cout << queue;
+    test1.enQueue(10);
+    test1.enQueue(154);
+    test1.enQueue(-4548);
+    test1.enQueue(645);
+    test1.enQueue(15);
+    test1.enQueue(91);
+    test1.enQueue(546);
 
-    // queue.deQueue();
+    std::cout << test1 << '\n';
 
-    // std:: cout << queue;
+    int tmp_for_test1;
 
-    QueueRing<int> queue(5);
+    tmp_for_test1 = test1.deQueue();
 
-    queue.enQueue(5);
-    queue.enQueue(3);
-    queue.enQueue(10);
-    queue.enQueue(53);
-    queue.enQueue(25);
+    std::cout << "deQeueu: " << tmp_for_test1 << " and cout test1" <<'\n';
 
-    std::cout << "First: \n";
+    std::cout << test1 << '\n';
 
-    std::cout << queue << '\n';
+    std::cout << "'\nConsructor copy and moving" << '\n';
 
-    std::cout << queue.deQueue() << '\n';
+    std::cout << "Constructor copy" << '\n';
 
-    std:: cout << queue;
+    QueueRing<int> test2(test1);
 
-    queue.enQueue(100);
-    // queue.enQueue(101);
+    std::cout << "test1" << test1 <<'\n';
+    std::cout << "test2" << test2 << '\n';
 
-    std::cout << queue;
+    std::cout << "Constructor moving" << '\n';
+
+    QueueRing<int> test3(std::move(test1));
+
+    std::cout << "test1" << test1 << "test1 isEmpty: " << test1.isEmpty() << '\n';
+    std::cout << "test2" << test2 << '\n';
+    std::cout << "test3" << test3 << '\n';
+
+    std::cout << "\nOperator = (copy)" << '\n';
+    test3.deQueue();
+    test3.deQueue();
+
+    test1 = test3;
+
+    std::cout << "test1" << test1 << '\n';
+    std::cout << "test3" << test3 << '\n';
+
+    std::cout << "\nEXCEPTIONS (string)" << '\n';
+
+    std::cout << "QueueOverflow" << '\n';
+
+    QueueRing<std::string> test4(3);
+
+    test4.enQueue("hello");
+    test4.enQueue("world");
+    test4.enQueue("chrome");
+
+    std::cout << test4 << '\n';
+
+    std::cout << "Exception:" << '\n';
+
+    test4.enQueue("exception");
+
+    std::cout << "\nWrongQueueSize" << '\n';
+
+    test4.deQueue();
+    test4.deQueue();
+    test4.deQueue();
+
+    std::cout << test4 << '\n';
+
+    std::cout << "Exception:" << '\n';
+    test4.deQueue();
 
     return 0;
 }

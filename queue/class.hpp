@@ -2,6 +2,8 @@
 #ifndef __CLASSES_HPP__
 #define __CLASSES_HPP__
 #include <iostream>
+#include <exception>
+#include <string>
 
 template <class T>
 class Queue
@@ -18,10 +20,13 @@ class QueueRing: public Queue<T>
 {
 public:
     QueueRing(std::size_t size = 100);
-    //другие конструкторы
-    //и переопределение операторов
+    QueueRing(const QueueRing<T>& src);
+    QueueRing(QueueRing<T>&& src);
 
-    virtual ~QueueRing();
+    QueueRing& operator=(const QueueRing<T>& src);
+    QueueRing& operator=(QueueRing<T>&& src);
+
+    virtual ~QueueRing() override;
 
     void enQueue(const T& element) override;
     T deQueue() override;
@@ -29,14 +34,53 @@ public:
     bool isEmpty();
     bool isFull();
 
+    void createArray(std::size_t size);
+
     template <class U>
     friend std::ostream& operator<<(std::ostream& out, QueueRing<U>& queue);
 
+    template <class U>
+    friend void swap(QueueRing<U>& first, QueueRing<U>& second);
+
 private:
     T* array_;
-    std::size_t head_; //front
-    std::size_t tail_; //rear
+    std::size_t head_;
+    std::size_t tail_;
     std::size_t size_;
+};
+
+template <class T>
+class QueueOverflow: public std::exception
+{
+public:
+    QueueOverflow() : reason_("QueueOverflow") {}
+    const char* what() const noexcept override { return reason_.c_str(); }
+
+private:
+    std::string reason_;
+};
+
+template <class T>
+class WrongQueueSize: public std::exception
+{
+public:
+    WrongQueueSize() : reason_("WrongQueueSize") {}
+    const char* what() const noexcept override { return reason_.c_str(); }
+private:
+    std::string reason_;
+};
+
+template <class T>
+void QueueRing<T>::createArray(std::size_t size)
+{
+    try
+    {
+        array_ = new T[size + 1];
+    }
+    catch(...)
+    {
+        throw WrongQueueSize<T>();
+    }
 };
 
 template <class T>
@@ -45,7 +89,84 @@ QueueRing<T>:: QueueRing(std::size_t size):
     tail_(0),
     size_(size)
 {
-    array_ = new T[size_ + 1];
+    try
+    {
+        createArray(size_);
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+}
+
+template <class T>
+QueueRing<T>:: QueueRing(const QueueRing<T>& src) :
+    head_(src.head_),
+    tail_(src.tail_),
+    size_(src.size_)
+{
+    try
+    {
+        createArray(size_);
+
+        std::size_t i = src.head_;
+
+        do
+        {
+            array_[i] = src.array_[i];
+            i = (i + 1) % src.size_;
+        }
+        while (i != (src.tail_ + 1) % src.size_);
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+}
+
+template <class T>
+QueueRing<T>:: QueueRing(QueueRing<T>&& src) :
+    array_(src.array_),
+    head_(src.head_),
+    tail_(src.tail_),
+    size_(src.size_)
+{
+    src.array_ = nullptr;
+    src.head_ = 0;
+    src.tail_ = 0;
+    src.size_ = 0;
+}
+
+template <class T>
+QueueRing<T>& QueueRing<T>:: operator=(const QueueRing<T>&src)
+{
+    if (this != &src)
+    {
+        QueueRing<T> tmp(src);
+        swap(*this, tmp);
+    }
+
+    return *this;
+}
+
+template <class T>
+QueueRing<T>& QueueRing<T>:: operator=(QueueRing<T>&&src)
+{
+    if (this != &src)
+    {
+        delete[] array_;
+        array_ = src.array_;
+        head_ = src.head_;
+        tail_ = src.tail_;
+        size_ = src.size_;
+
+        src.array_ = nullptr;
+        src.head_ = 0;
+        src.tail_ = 0;
+        src.size_ = 0;
+    }
+
+    return *this;
 }
 
 template <class T>
@@ -57,46 +178,55 @@ QueueRing<T>:: ~QueueRing()
 template <class T>
 void QueueRing<T>:: enQueue(const T& element)
 {
-    if (isFull())
+    try
     {
-        std::cout << "QueueOverflow" << '\n';
-        throw std::runtime_error("Queue overflow");
-        //throw QueueOverflow
-
-        return;
+        if (isFull())
+        {
+            throw QueueOverflow<T>();
+        }
+        else
+        {
+            if (head_ == 0) head_ = 1;
+            tail_ = (tail_ + 1) % size_;
+            array_[tail_] = element;
+        }
     }
-    else
+    catch(const std::exception& e)
     {
-        if (head_ == 0) head_ = 1;
-        tail_ = (tail_ + 1) % size_;
-        array_[tail_] = element;
+        std::cerr << e.what() << '\n';
     }
 }
 
 template <class T>
 T QueueRing<T>:: deQueue()
 {
-    if (isEmpty())
+    try
     {
-        std::cout << "WrongQueueSize" << '\n';
-        throw std::runtime_error("Queue underflow");
-        //throw WrongQueueSize
-    }
-    else
-    {
-        T tmp = array_[head_];
-
-        if (head_ == tail_)
+        if (isEmpty())
         {
-            head_ = 0;
-            tail_ = 0;
+            throw WrongQueueSize<T>();
         }
         else
         {
-            head_ = (head_ + 1) % size_;
-        }
+            T tmp = array_[head_];
 
-        return tmp;
+            if (head_ == tail_)
+            {
+                head_ = 0;
+                tail_ = 0;
+            }
+            else
+            {
+                head_ = (head_ + 1) % size_;
+            }
+
+            return tmp;
+        }
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+        return T{};
     }
 }
 
@@ -132,7 +262,18 @@ std::ostream& operator<<(std::ostream& out, QueueRing<U>& queue)
         while (i != (queue.tail_ + 1) % queue.size_);
     }
 
+    out << "End of queue's elements" << '\n';
+
     return out;
+}
+
+template <class U>
+void swap(QueueRing<U>& first, QueueRing<U>& second)
+{
+    std::swap(first.array_, second.array_);
+    std::swap(first.head_, second.head_);
+    std::swap(first.tail_, second.tail_);
+    std::swap(first.size_, second.size_);
 }
 
 #endif // !__CLASSES_HPP
