@@ -59,14 +59,13 @@ bool checkBalanceBrackets(const char* text, const int maxDeep)
 
 int main()
 {
-#if 1
     //tests of StackVector
     std:: cout << "Tests of StackVector" << '\n';
 
     StackVector<int> test(2);
     int tmp;
 
-    std::cout << "Push/Pop..." << '\n';
+    std::cout << "\nPush/Pop..." << '\n';
 
     std::cout << "isEmpty: " << test.isEmpty() << '\n';
     test.push(5);
@@ -82,7 +81,7 @@ int main()
 
     std::cout << tmp << '\n';
 
-    std::cout << "Copy constuct" << '\n';
+    std::cout << "\nCopy constuct" << '\n';
 
     StackVector<std::string> first(5);
     first.push("hello world!");
@@ -95,14 +94,14 @@ int main()
     std::cout << "Second:" << '\n';
     std::cout << second << '\n';
 
-    std::cout << "Move constuct" << '\n';
+    std::cout << "\nMove constuct" << '\n';
 
     StackVector<std::string> third(std::move(first));
     std::cout << "Third:" << '\n';
     std::cout << third << '\n';
     std::cout << "Empty first?: " << first.isEmpty() << '\n';
 
-    std::cout << "Copy =" << '\n';
+    std::cout << "\nCopy =" << '\n';
 
     StackVector<double> a(10), b;
     a.push(1.5);
@@ -123,7 +122,7 @@ int main()
     std::cout << "b is empyt: " << b.isEmpty() << '\n';
 
     //checkBalanceBrackets
-    std::cout << "checkBalanceBrackets" << '\n';
+    std::cout << "\ncheckBalanceBrackets" << '\n';
 
     struct Node
     {
@@ -154,24 +153,61 @@ int main()
     {
         std::cout << arr[i].getElem() << " : " << checkBalanceBrackets(arr[i].getElem(), arr[i].getDeep()) << '\n';
     }
-#endif
 
-#if 0
+    std::cout << "\nTest's of exception's" << '\n';
+
+    std::cout << "\nException for pop (StackUnderflow):" << '\n';
+
     StackVector<int> stack(3);
 
     stack.push(1);
     stack.push(2);
 
-    int a, b, c;
+    try
+    {
+        std::cout << "\nPop's:" << '\n';
 
-    a = stack.pop();
-    b = stack.pop();
-    c = stack.pop();
-#endif
+        std::cout << "First pop: " << stack.pop() << '\n';
+        std::cout << "Second pop: " << stack.pop() << '\n';
+        std::cout << "Third pop: " << stack.pop() << '\n';
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
 
-#if 0
-    StackVector<int> test(1000000000000000000);
-#endif
+    std::cout << "\nException for big size of stack (WrongStackSize):" << '\n';
+
+    try
+    {
+        StackVector<int> test_big_size(1000000000000000000);
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+
+    std::cout << "\nException for many push and big size of stack (WrongStackSize): " << '\n';
+
+    StackVector<int> many_push(10);
+
+    std::size_t const BIG_SIZE = 1000000000000000000;
+    std::size_t colvo_operation = 0;
+
+    try
+    {
+        for (std::size_t i = 0; i <= BIG_SIZE; ++i)
+        {
+            colvo_operation = i;
+
+            many_push.push(1);
+        }
+    }
+    catch(const std::exception& e)
+    {
+        std::cout << "Colvo operation before exception: " << colvo_operation << '\n';
+        std::cerr << e.what() << '\n';
+    }
 
     return 0;
 }
