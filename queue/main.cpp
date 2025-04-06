@@ -70,18 +70,32 @@ int main()
 
     std::cout << "Exception:" << '\n';
 
-    test4.enQueue("exception");
+    try
+    {
+        test4.enQueue("exception");
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
 
     std::cout << "\nWrongQueueSize" << '\n';
 
-    test4.deQueue();
     test4.deQueue();
     test4.deQueue();
 
     std::cout << test4 << '\n';
 
     std::cout << "Exception:" << '\n';
-    test4.deQueue();
+
+    try
+    {
+        test4.deQueue();
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
 
     return 0;
 }

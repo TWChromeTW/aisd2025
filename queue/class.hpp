@@ -19,6 +19,8 @@ template <class T>
 class QueueRing: public Queue<T>
 {
 public:
+    static constexpr std::size_t MAX_STACK_SIZE = 100'000'000;
+
     QueueRing(std::size_t size = 100);
     QueueRing(const QueueRing<T>& src);
     QueueRing(QueueRing<T>&& src);
@@ -33,8 +35,6 @@ public:
 
     bool isEmpty();
     bool isFull();
-
-    void createArray(std::size_t size);
 
     template <class U>
     friend std::ostream& operator<<(std::ostream& out, QueueRing<U>& queue);
@@ -71,32 +71,17 @@ private:
 };
 
 template <class T>
-void QueueRing<T>::createArray(std::size_t size)
-{
-    try
-    {
-        array_ = new T[size + 1];
-    }
-    catch(...)
-    {
-        throw WrongQueueSize<T>();
-    }
-};
-
-template <class T>
 QueueRing<T>:: QueueRing(std::size_t size):
     head_(0),
     tail_(0),
     size_(size)
 {
-    try
+    if (size > MAX_STACK_SIZE)
     {
-        createArray(size_);
+        throw WrongQueueSize<T>();
     }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << '\n';
-    }
+
+    array_ = new T[size_ + 1];
 }
 
 template <class T>
@@ -105,23 +90,16 @@ QueueRing<T>:: QueueRing(const QueueRing<T>& src) :
     tail_(src.tail_),
     size_(src.size_)
 {
-    try
-    {
-        createArray(size_);
+    array_ = new T[size_ + 1];
 
-        std::size_t i = src.head_;
+    std::size_t i = src.head_;
 
-        do
-        {
-            array_[i] = src.array_[i];
-            i = (i + 1) % src.size_;
-        }
-        while (i != (src.tail_ + 1) % src.size_);
-    }
-    catch(const std::exception& e)
+    do
     {
-        std::cerr << e.what() << '\n';
+        array_[i] = src.array_[i];
+        i = (i + 1) % src.size_;
     }
+    while (i != (src.tail_ + 1) % src.size_);
 }
 
 template <class T>
@@ -178,55 +156,40 @@ QueueRing<T>:: ~QueueRing()
 template <class T>
 void QueueRing<T>:: enQueue(const T& element)
 {
-    try
+    if (isFull())
     {
-        if (isFull())
-        {
-            throw QueueOverflow<T>();
-        }
-        else
-        {
-            if (head_ == 0) head_ = 1;
-            tail_ = (tail_ + 1) % size_;
-            array_[tail_] = element;
-        }
+        throw QueueOverflow<T>();
     }
-    catch(const std::exception& e)
+    else
     {
-        std::cerr << e.what() << '\n';
+        if (head_ == 0) head_ = 1;
+        tail_ = (tail_ + 1) % size_;
+        array_[tail_] = element;
     }
 }
 
 template <class T>
 T QueueRing<T>:: deQueue()
 {
-    try
+    if (isEmpty())
     {
-        if (isEmpty())
+        throw WrongQueueSize<T>();
+    }
+    else
+    {
+        T tmp = array_[head_];
+
+        if (head_ == tail_)
         {
-            throw WrongQueueSize<T>();
+            head_ = 0;
+            tail_ = 0;
         }
         else
         {
-            T tmp = array_[head_];
-
-            if (head_ == tail_)
-            {
-                head_ = 0;
-                tail_ = 0;
-            }
-            else
-            {
-                head_ = (head_ + 1) % size_;
-            }
-
-            return tmp;
+            head_ = (head_ + 1) % size_;
         }
-    }
-    catch(const std::exception& e)
-    {
-        std::cerr << e.what() << '\n';
-        return T{};
+
+        return tmp;
     }
 }
 
