@@ -19,8 +19,6 @@ template<class T>
 class StackVector: public Stack<T>
 {
 public:
-    static constexpr std::size_t MAX_STACK_SIZE = 100'000'000;
-
     StackVector(std::size_t size = 100);
     StackVector(const StackVector<T>& src);
     StackVector(StackVector<T>&& src);
@@ -72,12 +70,14 @@ StackVector<T>:: StackVector(std::size_t size) :
     top_(0),
     size_(size)
 {
-    if (size > MAX_STACK_SIZE)
+    try
+    {
+        array_ = new T[size_ + 1];
+    }
+    catch(...)
     {
         throw WrongStackSize<T>();
     }
-
-    array_ = new T[size_ + 1];
 }
 
 template<class T>
@@ -152,21 +152,23 @@ void StackVector<T>::push(const T& element)
     {
         std::size_t new_size = size_*2 + 1;
 
-        if (new_size > MAX_STACK_SIZE)
+        try
+        {
+            T* new_array = new T[new_size];
+
+            for (std::size_t i = 1; i <= size_; ++i)
+            {
+                new_array[i] = array_[i];
+            }
+
+            delete[] array_;
+            array_ = new_array;
+            size_ = new_size -1;
+        }
+        catch(const std::bad_alloc&)
         {
             throw WrongStackSize<T>();
         }
-
-        T* new_array = new T[new_size];
-
-        for (std::size_t i = 1; i <= size_; ++i)
-        {
-            new_array[i] = array_[i];
-        }
-
-        delete[] array_;
-        array_ = new_array;
-        size_ = new_size -1;
     }
 
     array_[++top_] = element;

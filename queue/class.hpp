@@ -64,7 +64,7 @@ template <class T>
 class WrongQueueSize: public std::exception
 {
 public:
-    WrongQueueSize() : reason_("WrongQueueSize") {}
+    WrongQueueSize(std::string reason) : reason_(reason) {}
     const char* what() const noexcept override { return reason_.c_str(); }
 private:
     std::string reason_;
@@ -78,10 +78,17 @@ QueueRing<T>:: QueueRing(std::size_t size):
 {
     if (size > MAX_STACK_SIZE)
     {
-        throw WrongQueueSize<T>();
+        throw WrongQueueSize<T>("Maximum size reached");
     }
 
-    array_ = new T[size_ + 1];
+    try
+    {
+        array_ = new T[size_ + 1];
+    }
+    catch(...)
+    {
+        throw WrongQueueSize<T>("Memory allocation failed");
+    }
 }
 
 template <class T>
@@ -173,7 +180,7 @@ T QueueRing<T>:: deQueue()
 {
     if (isEmpty())
     {
-        throw WrongQueueSize<T>();
+        throw WrongQueueSize<T>("Empty queue");
     }
     else
     {

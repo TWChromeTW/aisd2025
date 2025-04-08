@@ -97,5 +97,16 @@ int main()
         std::cerr << e.what() << '\n';
     }
 
+    std::cout << "\nException:" << '\n';
+
+    try
+    {
+        QueueRing<int> test5(1000000000000000000);
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
+
     return 0;
 }
